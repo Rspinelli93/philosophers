@@ -1,50 +1,32 @@
 # Philosophers
 
-My implementation of the classic Dining Philosophers problem, a concurrency project for 42.
+A simulation of the Dining Philosophers problem using POSIX threads and mutexes. It coordinates fork access, tracks meal timing, monitors starvation, and supports an optional meal-count stopping condition.
 
-## Description
+**42 Common Core · Rank 03** · [Curriculum hub](https://github.com/Rspinelli93/42-Common-Core) · [All projects](https://github.com/Rspinelli93/Rspinelli93/blob/main/PROJECTS.md)
 
-This project serves as an introduction to threading and processes. You will learn how to create multiple threads running concurrently and how to synchronize them using mutexes to prevent data races, deadlocks, and starvation.
+## Build and run
 
-The simulation follows these rules:
-* One or more philosophers sit at a round table.
-* There is a large bowl of spaghetti in the middle of the table.
-* The philosophers alternatively **eat**, **think**, or **sleep**.
-* There are as many forks on the table as there are philosophers.
-* A philosopher must acquire exactly two forks (the one on their left and the one on their right) to eat.
-* When a philosopher finishes eating, they drop both forks and start sleeping. Once awake, they start thinking again. 
-* The simulation stops the moment a philosopher starves to death.
+Requirements: C compiler, Make, and POSIX threads.
 
-## Core Concepts
+```bash
+git clone https://github.com/Rspinelli93/philosophers.git
+cd philosophers
+make
+./philo 5 800 200 200 3
+```
 
-* **Threads (`pthread_create`):** Every philosopher is a separate thread. This means they all execute their routines simultaneously within the same main process.
-* **Mutexes (`pthread_mutex_init`):** Because the threads share the same memory, data races will occur if two philosophers try to grab the same fork at the exact same time. Every fork state, as well as the printing of the logs and the death status, must be strictly protected by mutex locks.
+This example creates five philosophers and requests three meals per philosopher. Timing values are milliseconds.
 
-## Usage
+## Using the project
 
-Compile the executable using the provided Makefile:
+```text
+./philo number_of_philosophers time_to_die time_to_eat time_to_sleep [meals_per_philosopher]
+```
 
-    make
+The optional final argument stops the simulation when all philosophers reach the meal count. Without it, the simulation runs until a philosopher dies. Scheduling and machine load affect timing; a successful run is not a proof that all concurrent executions are race-free.
 
-Run the program with the following arguments:
+`init.c` creates simulation state, `philo_routine.c` implements the lifecycle, `monitor_routine.c` checks timing and completion, and `exit.c` handles cleanup.
 
-    ./philo [number_of_philosophers] [time_to_die] [time_to_eat] [time_to_sleep] [number_of_times_each_philosopher_must_eat]
+## Build cleanup
 
-### Arguments:
-1. **`number_of_philosophers`**: The number of philosophers and also the number of forks.
-2. **`time_to_die` (in milliseconds)**: If a philosopher doesn't start eating `time_to_die` milliseconds since the beginning of their last meal (or the start of the simulation), they die.
-3. **`time_to_eat` (in milliseconds)**: The time it takes for a philosopher to eat. They must hold two forks during this entire time.
-4. **`time_to_sleep` (in milliseconds)**: The time a philosopher will spend sleeping after a meal.
-5. **`number_of_times_each_philosopher_must_eat` (optional)**: If all philosophers have eaten at least this many times, the simulation stops. If not specified, the simulation runs until someone dies.
-
-### Example:
-
-    # 5 philosophers. They die if they go 800ms without eating. 
-    # They take 200ms to eat, and 200ms to sleep. 
-    # This specific configuration should run indefinitely (no one dies).
-    ./philo 5 800 200 200
-
-    # 4 philosophers. They die if they go 310ms without eating.
-    # They take 200ms to eat, and 100ms to sleep.
-    # A philosopher will die in this setup.
-    ./philo 4 310 200 100
+Use `make clean` to remove object files, `make fclean` to remove build products, and `make re` to rebuild.
